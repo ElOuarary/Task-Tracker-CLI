@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import time
+from typing import Any
 
 
 def create_task_file(file_name:str) -> None:
@@ -23,21 +24,25 @@ def create_task_file(file_name:str) -> None:
         print(f"{file_name} already exists.")
 
 
+def task_exists(description:str, tasks:list) -> bool:
+    """Check for the existence of the task in the tasks list"""
+    # Normalize task description to prevent case-sensitive duplicates
+    description_list = [task['description'].lower() for task in tasks]
+    return description.lower() not in description_list
+
+
 def add_task(description:str, file_name:str) -> None:
     """Add a task to the task.json file"""
 
     # Try to read the task.json file content
     try:
         with open(file_name, 'r') as file:
-            tasks = json.load(file)
+            tasks:list = json.load(file)
     except json.JSONDecodeError:
         raise json.JSONDecodeError(f"Error: The file '{file_name}' contains invalid JSON data.")
     
-    # # Normalize task description to prevent case-sensitive duplicates
-    description_list = [task['description'].lower() for task in tasks]
-    
     # Check if the task already exists
-    if description.lower() not in description_list:
+    if task_exists(description, tasks):
 
         # Create a dictionary that contain all the task information
         task = {
@@ -59,16 +64,26 @@ def add_task(description:str, file_name:str) -> None:
 
 
 def main():
-    commands = sys.argv[1:]
-    match commands[0]:
-        case 'create':
-            if len(commands) > 2:
-                print(f"Commande 'create' supports only one argument.")
-            elif len(commands) == 2:
-                create_task_file(commands[1])
-            else:
-                create_task_file('task.json')
-        case _:
-            print(f"Invalid Command")
+    try:
+        commands = sys.argv[1:]
+        commands_length = len(commands)
+        match commands[0]:
+            case 'create':
+                if commands_length > 1:
+                    print(f"Commande 'create' does not support any parameter.")
+                else:
+                    create_task_file('task.json')
+            case 'add_task':
+                if commands_length > 2:
+                    print(f"Commande 'add_task' supports only one parameter.")
+                elif commands_length == 0:
+                    print(f"Commade 'add_task' needs additional parameter.")
+                else:    
+                    add_task(commands[1], 'task.json')
+            case _:
+                print(f"Invalid Command")
+    except:
+        return None
+        
 
 main()
