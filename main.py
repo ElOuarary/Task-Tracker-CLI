@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import time
+from typing import Optional
 
 
 def create_task_file() -> None:
@@ -32,17 +33,25 @@ def id_exists(id: int, tasks: list) -> bool:
     return id in id_list
 
 
-def add_task(description: str) -> None:
-    """Add a task to the task.json file"""
-
-    # Try to read the task.json file
+def file_readble() -> Optional[list]:
+    """Try to read the task.json file"""
     try:
         with open("task.json", 'r') as file:
             tasks: list = json.load(file)
+        return tasks
     except FileNotFoundError:
         print(f"Error: The file 'task.json' does not exists.")
-        return None
-    
+        sys.exit
+
+def upadate_file(tasks: list) -> None:
+    with open("task.json", 'w') as file:
+            json.dump(tasks, file, indent=4)
+
+
+def add_task(description: str) -> None:
+    """Add a task to the task.json file"""
+    tasks = file_readble()
+
     # Check if the task does not exist
     if not description_exists(description, tasks):
 
@@ -57,8 +66,7 @@ def add_task(description: str) -> None:
         
         # Apped new task and update the task.json file
         tasks.append(task)
-        with open("task.json", 'w') as file:
-            json.dump(tasks, file, indent=4)
+        upadate_file(tasks)
         
         print(f"Task added succesfully.")
     else:
@@ -67,25 +75,30 @@ def add_task(description: str) -> None:
 
 def update_task(id: int, new_description: str):
     """Update a task in task.json file"""
-
-    # Try to read the task.json file
-    try:
-        with open("task.json", 'r') as file:
-            tasks: list = json.load(file)
-    except FileNotFoundError:
-        print(f"Error: The file 'task.json' does not exists.")
+    tasks = file_readble()
 
     if id_exists(id, tasks):
         tasks[id-1]["description"] = new_description
         tasks[id-1]["updatedAT"] = time.asctime()
     
-        # Apped new task and update the task.json file
-        with open("task.json", 'w') as file:
-           json.dump(tasks, file, indent=4)
+        # Update the tasks in task.json file
+        upadate_file(tasks)
         print(f"Task with the id:{id} updated succefully.")
     else:
         print(f"Error: No task with the id:{id} exists!") 
+
+
+def delete_task(id:int):
+    """Delete a task in task.json file"""
+    tasks = file_readble()
     
+    if id_exists(id, tasks):
+        tasks.pop(id - 1)
+        upadate_file(tasks)
+        print(f"Task with the id:{id} deleted succefully.")
+    else:
+        print(f"Error: No task with the id:{id} exists!")
+
 
 def main():
     try:
@@ -103,8 +116,8 @@ def main():
                     create_task_file()
                     sys.exit()
 
-            # Command 'add-task' workflow        
-            case 'add-task':
+            # Command 'add' workflow        
+            case 'add':
                 if commands_length > 2:
                     print(f"Commande 'add-task' supports only one parameter.")
                 elif commands_length == 1:
@@ -113,10 +126,10 @@ def main():
                     add_task(commands[1])
                     sys.exit()
 
-            # Command 'update-task workflow
-            case "update-task":
+            # Command 'update' workflow
+            case "update":
                 if commands_length > 3:
-                    print(f"Commande 'update-task' only supports 2 parametrs.")
+                    print(f"Commande 'update' only supports 2 parametrs.")
                 elif commands_length == 2:
                     print(f"1 missing parameter!")
                 elif commands_length == 1:
@@ -126,7 +139,18 @@ def main():
                         print(f"Value Error: first parameter is not an integer!")
                         sys.exit()    
                     update_task(int(commands[1]), commands[2])
-                    sys.exit()
+
+            # Command 'delete' workflow
+            case "delete":
+                if commands_length > 2:
+                    print(f"Commande 'delete' only supports 1 parameters.")
+                elif commands_length == 1:
+                    print(f"1 missing parameter!")
+                else:
+                    if not commands[1].isdigit():
+                        print(f"Value Error: first parameter is not an integer!")
+                        sys.exit()
+                    delete_task(int(commands[1]))
 
             # Handle a non existing command
             case _:
