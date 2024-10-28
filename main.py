@@ -88,7 +88,7 @@ def update_task(id: int, new_description: str):
         print(f"Error: No task with the id:{id} exists!") 
 
 
-def delete_task(id:int):
+def delete_task(id:int) -> None:
     """Delete a task in task.json file"""
     tasks = file_readble()
     
@@ -98,6 +98,13 @@ def delete_task(id:int):
         print(f"Task with the id:{id} deleted succefully.")
     else:
         print(f"Error: No task with the id:{id} exists!")
+
+
+def list_task() -> None:
+    """List all task in the task.json file"""
+    tasks = file_readble()
+    for task in tasks:
+        print(f"{task["id"]}: {task["description"]}.")
 
 
 def main():
@@ -143,7 +150,7 @@ def main():
             # Command 'delete' workflow
             case "delete":
                 if commands_length > 2:
-                    print(f"Commande 'delete' only supports 1 parameters.")
+                    print(f"Commande 'delete' only supports 1 parameters!")
                 elif commands_length == 1:
                     print(f"1 missing parameter!")
                 else:
@@ -151,6 +158,13 @@ def main():
                         print(f"Value Error: first parameter is not an integer!")
                         sys.exit()
                     delete_task(int(commands[1]))
+
+            # Command 'list' workflow
+            case "list":
+                if commands_length > 1:
+                    print(f"Commande 'list' does not support any parameter!")
+                else:
+                    list_task()
 
             # Handle a non existing command
             case _:
