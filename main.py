@@ -100,10 +100,14 @@ def delete_task(id:int) -> None:
         print(f"Error: No task with the id:{id} exists!")
 
 
-def list_task() -> None:
+def list_task(status:str = None) -> None:
     """List all task in the task.json file"""
     tasks = file_readble()
-    for task in tasks:
+    if status == None:
+       tasks_to_get = tasks
+    else:
+        tasks_to_get = [task for task in tasks if task["status"] == status]
+    for task in tasks_to_get:
         print(f"{task["id"]}: {task["description"]}.")
 
 
@@ -161,10 +165,15 @@ def main():
 
             # Command 'list' workflow
             case "list":
-                if commands_length > 1:
-                    print(f"Commande 'list' does not support any parameter!")
+                if commands_length > 2:
+                    print(f"Commande 'list' only support one parameter!")
+                elif commands_length == 1:
+                    list_task(None)
+                elif commands[1] in ("todo", "in-progress", "done"):
+                    list_task(commands[1])
                 else:
-                    list_task()
+                    print(f"Invalid parameter!")
+                
 
             # Handle a non existing command
             case _:
