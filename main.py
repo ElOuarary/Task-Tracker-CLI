@@ -111,6 +111,22 @@ def list_task(status:str = None) -> None:
         print(f"{task["id"]}: {task["description"]}.")
 
 
+def mark_in_progress(id:int) -> None:
+    """Mark a task as in progress or done"""
+    print("hello")
+    tasks = file_readble()
+    if id_exists(id, tasks):
+        for task in tasks:
+            if task["id"] == id:
+                task["status"] = "in-progress"
+                task["updatedAT"] = time.asctime()
+                upadate_file(tasks)
+                print(f"Task with the id:{id} marked in progress succefully.")
+            break
+    else:
+        print(f"Error: No task with the id:{id} exists!")
+
+
 def main():
     try:
         commands = sys.argv[1:]
@@ -159,7 +175,7 @@ def main():
                     print(f"1 missing parameter!")
                 else:
                     if not commands[1].isdigit():
-                        print(f"Value Error: first parameter is not an integer!")
+                        print(f"Value Error: parameter must be an integer!")
                         sys.exit()
                     delete_task(int(commands[1]))
 
@@ -174,6 +190,17 @@ def main():
                 else:
                     print(f"Invalid parameter!")
                 
+            # Command 'mark-in-progress
+            case "mark-in-progress":
+                if commands_length > 2:
+                    print(f"Commande 'mark-in-progress' only support one parameter!")
+                elif commands_length == 1:
+                    print(f"1 missing parameter!")
+                else:
+                    if not commands[1].isdigit():
+                        print(f"Value Error: parameter must be an integer!")
+                        sys.exit()
+                    mark_in_progress(int(commands[1]))
 
             # Handle a non existing command
             case _:
