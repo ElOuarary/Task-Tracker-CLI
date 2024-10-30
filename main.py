@@ -33,7 +33,7 @@ def id_exists(id: int, tasks: list) -> bool:
     return id in id_list
 
 
-def file_readble() -> Optional[list]:
+def read_task_file() -> Optional[list]:
     """Try to read the task.json file"""
     try:
         with open("task.json", 'r') as file:
@@ -43,14 +43,14 @@ def file_readble() -> Optional[list]:
         print(f"Error: The file 'task.json' does not exists.")
         sys.exit
 
-def upadate_file(tasks: list) -> None:
+def update_file(tasks: list) -> None:
     with open("task.json", 'w') as file:
             json.dump(tasks, file, indent=4)
 
 
 def add_task(description: str) -> None:
     """Add a task to the task.json file"""
-    tasks = file_readble()
+    tasks = read_task_file()
 
     # Check if the task does not exist
     if not description_exists(description, tasks):
@@ -66,7 +66,7 @@ def add_task(description: str) -> None:
         
         # Apped new task and update the task.json file
         tasks.append(task)
-        upadate_file(tasks)
+        update_file(tasks)
         
         print(f"Task added succesfully.")
     else:
@@ -75,14 +75,14 @@ def add_task(description: str) -> None:
 
 def update_task(id: int, new_description: str):
     """Update a task in task.json file"""
-    tasks = file_readble()
+    tasks = read_task_file()
 
     if id_exists(id, tasks):
         tasks[id-1]["description"] = new_description
         tasks[id-1]["updatedAT"] = time.asctime()
     
         # Update the tasks in task.json file
-        upadate_file(tasks)
+        update_file(tasks)
         print(f"Task with the id:{id} updated succefully.")
     else:
         print(f"Error: No task with the id:{id} exists!") 
@@ -90,11 +90,11 @@ def update_task(id: int, new_description: str):
 
 def delete_task(id:int) -> None:
     """Delete a task in task.json file"""
-    tasks = file_readble()
+    tasks = read_task_file()
     
     if id_exists(id, tasks):
         tasks.pop(id - 1)
-        upadate_file(tasks)
+        update_file(tasks)
         print(f"Task with the id:{id} deleted succefully.")
     else:
         print(f"Error: No task with the id:{id} exists!")
@@ -102,7 +102,7 @@ def delete_task(id:int) -> None:
 
 def list_task(status:str = None) -> None:
     """List all task in the task.json file"""
-    tasks = file_readble()
+    tasks = read_task_file()
     if status == None:
        tasks_to_get = tasks
     else:
@@ -112,16 +112,30 @@ def list_task(status:str = None) -> None:
 
 
 def mark_in_progress(id:int) -> None:
-    """Mark a task as in progress or done"""
-    print("hello")
-    tasks = file_readble()
+    """Mark a task as in progress"""
+    tasks = read_task_file()
     if id_exists(id, tasks):
         for task in tasks:
             if task["id"] == id:
                 task["status"] = "in-progress"
                 task["updatedAT"] = time.asctime()
-                upadate_file(tasks)
+                update_file(tasks)
                 print(f"Task with the id:{id} marked in progress succefully.")
+            break
+    else:
+        print(f"Error: No task with the id:{id} exists!")
+
+
+def mark_done(id:int) -> None:
+    """Mark a task as done"""
+    tasks = read_task_file()
+    if id_exists(id, tasks):
+        for task in tasks:
+            if task["id"] == id:
+                task["status"] = "done"
+                task["updatedAT"] = time.asctime()
+                update_file(tasks)
+                print(f"Task with the id:{id} marked done succefully.")
             break
     else:
         print(f"Error: No task with the id:{id} exists!")
@@ -190,7 +204,7 @@ def main():
                 else:
                     print(f"Invalid parameter!")
                 
-            # Command 'mark-in-progress
+            # Command 'mark-in-progress'
             case "mark-in-progress":
                 if commands_length > 2:
                     print(f"Commande 'mark-in-progress' only support one parameter!")
@@ -201,6 +215,18 @@ def main():
                         print(f"Value Error: parameter must be an integer!")
                         sys.exit()
                     mark_in_progress(int(commands[1]))
+
+            # Command 'mark-done'
+            case "mark-done":
+                if commands_length > 2:
+                    print(f"Commande 'mark-done' only support one parameter!")
+                elif commands_length == 1:
+                    print(f"1 missing parameter!")
+                else:
+                    if not commands[1].isdigit():
+                        print(f"Value Error: parameter must be an integer!")
+                        sys.exit()
+                    mark_done(int(commands[1]))
 
             # Handle a non existing command
             case _:
